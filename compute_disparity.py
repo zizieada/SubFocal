@@ -219,12 +219,12 @@ if __name__ == '__main__':
     print("runtime: %.5f(s)" % runtime)
 
     if args.outputname == '':
-        output_name = image_path.split('/')[-1]
+        output_name = image_path.split(os.sep)[-1]
     else:
         output_name = args.outputname
 
     # save .pfm file
-    output_jpg = os.path.join(dir_output, '{0:s}.jpg'.format(output_name))
+    output_jpg = os.path.join(dir_output, '{0:s}.png'.format(output_name))
     output_pfm = os.path.join(dir_output, '{0:s}.pfm'.format(output_name))
     imageio.imsave(output_jpg,
                     val_output_tmp[0, :, :])
