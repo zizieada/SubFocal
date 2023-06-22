@@ -48,7 +48,8 @@ def make_input_image(image,
 
 
 def make_input(image_path, image_h, image_w, naming = 'HCI', starting = [0,0], 
-               image_format = 'png', match_dict = {}, input_angle_resolution = 13):
+               image_format = 'png', match_dict = {}, input_angle_resolution = 13, 
+               temp_folder = []):
     '''
     data from http://hci-lightfield.iwr.uni-heidelberg.de/
     Sample images ex: Cam000~ Cam080.png  
@@ -86,6 +87,11 @@ def make_input(image_path, image_h, image_w, naming = 'HCI', starting = [0,0],
         #check first perspective
         input_image = os.path.join(image_path,
                                    '{0:03d}_{0:03d}.{1:s}'.format(0, image_format))
+        
+        if temp_folder:
+            os.system(f'convert {input_image} -depth 8 {os.path.join(temp_folder,"output.png")}')
+            input_image = os.path.join(temp_folder,"output.png")
+
         if os.path.isfile(input_image):
             tmp = imageio.imread(input_image)
 
@@ -100,6 +106,7 @@ def make_input(image_path, image_h, image_w, naming = 'HCI', starting = [0,0],
                                    '{0:03d}_{1:03d}.{2:s}'.format(starting[0]+8, 
                                                                            starting[1]+8, 
                                                                            image_format))
+        
         if not os.path.isfile(input_image):
             starting = [0,0]
             print('{} does not exist'.format(input_image))
@@ -110,6 +117,10 @@ def make_input(image_path, image_h, image_w, naming = 'HCI', starting = [0,0],
                                                                            starting[1]+8, 
                                                                            image_format))
         
+        if temp_folder:
+            os.system(f'convert {input_image} -depth 8 {os.path.join(temp_folder,"output.png")}')
+            input_image = os.path.join(temp_folder,"output.png")
+        
         if not os.path.isfile(input_image):
             raise SystemExit('Could not find SAI ({0:s}), hence cannot run'.format(input_image))
 
@@ -119,6 +130,10 @@ def make_input(image_path, image_h, image_w, naming = 'HCI', starting = [0,0],
                                            '{0:03d}_{1:03d}.{2:s}'.format(starting[0]+column, 
                                                                            starting[1]+row, 
                                                                            image_format))
+                if temp_folder:
+                    os.system(f'convert {input_image} -depth 8 {os.path.join(temp_folder,"output.png")}')
+                    input_image = os.path.join(temp_folder,"output.png")
+
                 if os.path.isfile(input_image):
                     A = make_input_image(input_image, image_h=image_h, image_w=image_w)
                     output_list.append(A)

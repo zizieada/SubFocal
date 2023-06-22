@@ -28,6 +28,7 @@ import os
 import time
 import argparse
 import tensorflow as tf
+import shutil
 from LF_func.func_pfm import write_pfm, read_pfm
 # from LF_func.func_makeinput import make_epiinput
 from LF_func.func_makeinput import make_input
@@ -80,7 +81,9 @@ def get_non_empty_subsubfolders(root_folder,
                                 method = 'JPEG_Pleno'):
     subsubfolders = []
     folder_iter = os.walk(root_folder)
-    next(folder_iter)
+
+    if method != 'GT':
+        next(folder_iter)
     
     for root, dirs, files in folder_iter: #os.walk(root_folder):
         for dir in dirs:
@@ -212,15 +215,29 @@ if __name__ == '__main__':
     # for image_path in dir_LFimages:
 
     # get list of folders
-    list_of_folders = get_non_empty_subsubfolders(os.path.join(args.dataset, args.compression),
+    if args.compression == 'GT':
+        list_of_folders = get_non_empty_subsubfolders(args.dataset,
                                                   min_files = 168,
                                                   method = args.compression)
+        temp_folder = os.path.join(compression_dir_output,'temporary')
+        if not os.path.exists(temp_folder):
+            os.makedirs(temp_folder)
+    else:
+        list_of_folders = get_non_empty_subsubfolders(os.path.join(args.dataset, args.compression),
+                                                    min_files = 168,
+                                                    method = args.compression)
+        temp_folder = []
+        
     if args.compression == 'JPEG_Pleno':
         naming = 'column_row'
         folder_name_id = -2
     elif args.compression == 'ALVC':
         naming = 'ALVC'
         folder_name_id = -3
+    elif args.compression == 'GT':
+        naming = 'column_row'
+        folder_name_id = -1
+
 
     # if args.naming not in ['HCI', 'column_row', 'ALVC']:
     #     naming = 'HCI'
@@ -230,7 +247,7 @@ if __name__ == '__main__':
     if naming in ['column_row', 'ALVC']:
         starting = args.starting
     else:
-        starting = [2,2]
+        starting = [2,2]   
 
     for image_path in list_of_folders:
 
@@ -239,7 +256,7 @@ if __name__ == '__main__':
         #val_list = make_input(image_path, image_h, image_w, AngualrViews)
         val_list = make_input(image_path, image_h, image_w, 
                             naming = naming, starting = starting, #[0,0], 
-                            image_format = str(args.format))
+                            image_format = str(args.format), temp_folder=temp_folder)
 
         input_prep_time = time.time()
 
@@ -249,10 +266,14 @@ if __name__ == '__main__':
         runtime = time.time() - start
         print("runtime: %.5f(s)" % runtime)
 
-        subject_name = image_path.split(os.sep)[folder_name_id]
-        output_name = image_path.split(os.sep)[folder_name_id+1]
+        if args.compression == 'GT':
+            dir_output = compression_dir_output
+            output_name = image_path.split(os.sep)[folder_name_id]
+        else:
+            subject_name = image_path.split(os.sep)[folder_name_id]
+            output_name = image_path.split(os.sep)[folder_name_id+1]
+            dir_output = os.path.join(compression_dir_output,subject_name)
 
-        dir_output = os.path.join(compression_dir_output,subject_name)
         if not os.path.exists(dir_output):
             os.makedirs(dir_output)
 
@@ -264,3 +285,7 @@ if __name__ == '__main__':
         write_pfm(val_output_tmp[0, :, :],
                     output_pfm)
         print('pfm file saved as %s' % output_pfm)
+
+    if temp_folder:
+        shutil.rmtree(temp_folder)
+
