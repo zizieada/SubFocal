@@ -251,21 +251,6 @@ if __name__ == '__main__':
 
     for image_path in list_of_folders:
 
-        start = time.time()
-
-        #val_list = make_input(image_path, image_h, image_w, AngualrViews)
-        val_list = make_input(image_path, image_h, image_w, 
-                            naming = naming, starting = starting, #[0,0], 
-                            image_format = str(args.format), temp_folder=temp_folder)
-
-        input_prep_time = time.time()
-
-        # predict
-        val_output_tmp, _ = model_512.predict(val_list, batch_size=1)
-
-        runtime = time.time() - start
-        print("runtime: %.5f(s)" % runtime)
-
         if args.compression == 'GT':
             dir_output = compression_dir_output
             output_name = image_path.split(os.sep)[folder_name_id]
@@ -274,17 +259,36 @@ if __name__ == '__main__':
             output_name = image_path.split(os.sep)[folder_name_id+1]
             dir_output = os.path.join(compression_dir_output,subject_name)
 
-        if not os.path.exists(dir_output):
-            os.makedirs(dir_output)
-
-        # save .pfm file
         output_jpg = os.path.join(dir_output, '{0:s}.png'.format(output_name))
         output_pfm = os.path.join(dir_output, '{0:s}.pfm'.format(output_name))
-        imageio.imsave(output_jpg,
-                        val_output_tmp[0, :, :])
-        write_pfm(val_output_tmp[0, :, :],
-                    output_pfm)
-        print('pfm file saved as %s' % output_pfm)
+
+        # run the estimation only if the file does not exist already
+        if not os.path.isfile(output_pfm):
+
+            start = time.time()
+
+            #val_list = make_input(image_path, image_h, image_w, AngualrViews)
+            val_list = make_input(image_path, image_h, image_w, 
+                                naming = naming, starting = starting, #[0,0], 
+                                image_format = str(args.format), temp_folder=temp_folder)
+
+            input_prep_time = time.time()
+
+            # predict
+            val_output_tmp, _ = model_512.predict(val_list, batch_size=1)
+
+            runtime = time.time() - start
+            print("runtime: %.5f(s)" % runtime)
+
+            if not os.path.exists(dir_output):
+                os.makedirs(dir_output)
+
+            # save .pfm file
+            imageio.imsave(output_jpg,
+                            val_output_tmp[0, :, :])
+            write_pfm(val_output_tmp[0, :, :],
+                        output_pfm)
+            print('pfm file saved as %s' % output_pfm)
 
     if temp_folder:
         shutil.rmtree(temp_folder)
