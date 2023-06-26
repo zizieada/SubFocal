@@ -1,0 +1,6 @@
+numpy
+imageio
+Pillow
+tensorflow
+tensorflow-addons
+tensorboard
