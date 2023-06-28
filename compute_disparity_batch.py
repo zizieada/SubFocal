@@ -234,6 +234,9 @@ if __name__ == '__main__':
     elif args.compression == 'ALVC':
         naming = 'ALVC'
         folder_name_id = -3
+    if args.compression == 'SADN':
+        naming = 'column_row'
+        folder_name_id = -2
     elif args.compression == 'GT':
         naming = 'column_row'
         folder_name_id = -1
